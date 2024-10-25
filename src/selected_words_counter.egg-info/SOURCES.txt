@@ -1,0 +1,5 @@
+setup.py
+src/selected_words_counter.egg-info/PKG-INFO
+src/selected_words_counter.egg-info/SOURCES.txt
+src/selected_words_counter.egg-info/dependency_links.txt
+src/selected_words_counter.egg-info/top_level.txt
