@@ -5,7 +5,7 @@ from glob import glob
 import config
 from selected_words_counter import counting
 
-version = 2
+version = 3
 
 
 def generate_filename(version):
@@ -14,7 +14,7 @@ def generate_filename(version):
     return filename
 
 
-df = counting.word_finding_in_files(
+df = counting.word_counting_in_files(
     config.aword_list,
     [
         afilepath

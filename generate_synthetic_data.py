@@ -2,6 +2,7 @@ import os
 import random
 import string
 import zipfile
+from glob import glob
 
 import openpyxl
 import requests
@@ -57,7 +58,10 @@ def create_xlsx(filename):
     ws = wb.active
     for row in range(1, 11):
         for col in range(1, 6):
-            ws.cell(row=row, column=col).value = random.randint(1, 100)
+            if random.randint(0, 50) > 40:
+                ws.cell(row=row, column=col).value = random.randint(1, 100)
+            else:
+                ws.cell(row=row, column=col).value = random_text(10)
     wb.save(filename)
     print(f"Created {filename}")
 
@@ -107,8 +111,8 @@ def create_msg(filename):
 
 def main():
     # Params for the amount of documents made.
-    amount_of_documents = 70
-    for xi in range(0, amount_of_documents):
+    amount_of_files = 3000
+    while len(glob("./data/*")) < amount_of_files:
         if random.randint(0, 50) > 10:
             create_docx("./data/" + random_text(6) + ".docx")
         if random.randint(0, 50) > 25:
