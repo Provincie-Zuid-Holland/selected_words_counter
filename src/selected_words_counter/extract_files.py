@@ -1,10 +1,12 @@
+import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from glob import glob
 
 from tqdm import tqdm
 
 import config
-from selected_words_counter.function import process_file
+from selected_words_counter.functions import process_file
 
 
 def process_and_save_file(afilepath, verbose=False):
@@ -48,3 +50,12 @@ def extracted_files_from_list_filepaths(afilepaths, verbose=False):
                 future.result()
             except Exception as e:
                 print(f"Exception occurred: {e}")
+
+
+def run():
+    if os.path.isdir(config.local_folder_mount_point_extracted) == False:
+        os.makedirs(config.local_folder_mount_point_extracted)
+
+    extracted_files_from_list_filepaths(
+        [afilepath for afilepath in glob(config.local_folder_mount_point + "/*")]
+    )

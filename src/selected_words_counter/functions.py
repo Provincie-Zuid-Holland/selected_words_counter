@@ -1,4 +1,6 @@
 import os
+import shutil
+from datetime import datetime
 from glob import glob
 
 import extract_msg
@@ -8,19 +10,35 @@ import PyPDF2
 import textract
 from docx import Document
 
-## This notebook contains all the relevant functions used for the word counting for woo request mix of reading and counting.
+import config
+
+""" 
+This code contains all functions for reading in different file formats 
+
+"""
 ## Author: Michael de Winter
 
 
 # Different functions for opening files.
 def read_pdf(file_path):
     text = ""
-    with open(file_path, "rb") as file:
-        pdf_reader = PyPDF2.PdfReader(file)
-        num_pages = len(pdf_reader.pages)
-        for page_num in range(num_pages):
-            page = pdf_reader.pages[page_num]
-            text += page.extract_text()
+    try:
+        with open(file_path, "rb") as file:
+            pdf_reader = PyPDF2.PdfReader(file)
+            num_pages = len(pdf_reader.pages)
+            for page_num in range(num_pages):
+                page = pdf_reader.pages[page_num]
+                page_text = page.extract_text()
+
+                # Handle encoding issues with utf-8-sig and replace errors
+                if page_text:
+                    text += page_text.encode("utf-8-sig", errors="replace").decode(
+                        "utf-8-sig", errors="replace"
+                    )
+
+    except Exception as e:
+        print(f"Error processing {file_path}: {e}")
+
     return text
 
 
@@ -67,28 +85,6 @@ def read_pptx(file_path):
     return text
 
 
-def count_word_combinations(text, word_list):
-    """
-    Count the number of occurences of words in a string text.
-
-    TODO: This could be included in further tests
-    @param text: string value of text.
-    @param word_list: a array of words which have to found in the text.
-    """
-    counts = {}
-
-    # Convert the text to lower case for case-insensitive matching
-    text = str(text.lower())
-
-    # Iterate through each combination of words
-    for i in range(len(word_list)):
-        # Count the number of occurrences of the combination in the text
-        count = text.count(word_list[i])
-        # Store the count in the dictionary
-        counts[word_list[i]] = count
-    return counts
-
-
 def process_file(a_file_path):
     """
     Open a file  based on a file extension.
@@ -131,27 +127,6 @@ def process_file(a_file_path):
     return a_content
 
 
-def word_count_in_file(a_file_path, aword_list, verbose_setting=False):
-    """
-    Counts the number of words in a text based on a word_list.
-
-    TODO: This can be used in tests for further validation.
-    @param a_file_path: File path to a file.
-    @param aword_list: A list of words which should be counted
-    """
-
-    return_words = count_word_combinations(process_file(a_file_path), aword_list)
-
-    return return_words
-
-
-def count_files_in_directory(directory):
-    file_count = 0
-    for root, dirs, files in os.walk(directory):
-        file_count += len(files)
-    return file_count
-
-
 def retrieve_counts_extension_types(adirectory):
     """Looks in a directory to find the number of files of each type.
 
@@ -172,6 +147,18 @@ def retrieve_counts_extension_types(adirectory):
 
     # Print the sorted file types
     return sorted_file_types
+
+
+def generate_filename(version):
+    """
+    Generate a filename output based on the current date and the version.
+
+    """
+    current_date = datetime.now().strftime("%Y-%m-%d")  # Format as YYYY-MM-DD
+    filename = (
+        f"{config.output_dir}/selected_word_counter_output_{current_date}_v{version}"
+    )
+    return filename
 
 
 class FilterMinWords:
@@ -200,3 +187,13 @@ class FilterMinWords:
                 # self.hits =self.hits[~self.hits['Bestandsnaam in export'].str.lower().str.contains(word.lower())]
 
         return self.hits
+
+
+def delete_directory(path):
+    try:
+        shutil.rmtree(path)
+        print(f"Directory '{path}' and all its contents were deleted successfully.")
+    except FileNotFoundError:
+        print(f"Directory '{path}' not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
