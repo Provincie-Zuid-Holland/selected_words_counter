@@ -3,12 +3,7 @@ import os
 from glob import glob
 
 import config
-from selected_words_counter import (
-    SelectedWordCounter,
-    counting,
-    extract_files,
-    functions,
-)
+from selected_words_counter import SelectedWordCounter
 
 version = 4
 

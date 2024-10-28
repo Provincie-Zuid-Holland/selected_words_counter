@@ -6,10 +6,22 @@ from selected_words_counter import counting, extract_files, functions
 
 
 class SelectedWordCounter:
-    def __init__(self, version=1, extract=True, output_extension=".xlsx"):
+    def __init__(self, version=1, extract=True, output_extension=".xlsx", awordlist =False, local_folder_mount_point = False, keep_extracted = False, output_dir= False):
         self.extract = extract
         self.version = version
         self.output_extension = output_extension
+
+        #Overwrite config settings if arguments are given.
+        if aword_list:
+            # Lower case all words for easier matching.
+            aword_list = [aword.lower().replace(".", "") for aword in aword_list]
+            config.aword_list = aword_list
+        if local_folder_mount_point:
+            config.local_folder_mount_point = local_folder_mount_point
+        if keep_extracted:
+            config.keep_extracted = keep_extracted
+        if output_dir:
+            config.output_dir = output_dir
 
     def run(self):
         if self.extract:

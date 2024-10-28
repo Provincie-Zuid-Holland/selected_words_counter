@@ -6,8 +6,9 @@ It first coverts various files types into .txt file formats for easier handling 
 Than it searches all the files.
 
 
-## Instruction for running:
+## Instruction for running
 1. Alter the config.py parameters.
 2. Run the main.py file.
-   
-@author: Michael de Winter
+
+## Author 
+Michael de Winter
