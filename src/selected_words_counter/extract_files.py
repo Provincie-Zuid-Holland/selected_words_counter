@@ -44,6 +44,7 @@ def process_and_save_file(afilepath, verbose=False):
 def extract_msg_attachments():
     # Extract all .msg files into a directory
     for afilepath in glob(config.local_folder_mount_point + "*.msg"):
+        afilepath = afilepath.replace("\\", "/")
         try:
             msg = extract_msg.Message(afilepath)
 
@@ -63,15 +64,20 @@ def extract_msg_attachments():
 
 def extract_zip_attachments():
     # Extract a zip file into a new directory
-    for afilepath in glob(config.local_folder_mount_point + "*.zip"):
-        print(afilepath)
-        a_output_directory = str(afilepath.rsplit(".", 1)[0])
-        print("Making directory to save files in:" + a_output_directory)
-        os.makedirs(a_output_directory)
 
-        # Extract the contents of the zip file
-        with zipfile.ZipFile(afilepath, "r") as zip_ref:
-            zip_ref.extractall(a_output_directory)
+    for afilepath in glob(config.local_folder_mount_point + "*.zip"):
+        try:
+            afilepath = afilepath.replace("\\", "/")
+            print(afilepath)
+            a_output_directory = str(afilepath.rsplit(".", 1)[0])
+            print("Making directory to save files in:" + a_output_directory)
+            os.makedirs(a_output_directory)
+
+            # Extract the contents of the zip file
+            with zipfile.ZipFile(afilepath, "r") as zip_ref:
+                zip_ref.extractall(a_output_directory)
+        except Exception as e:
+            print(e)
 
 
 def extracted_files_from_list_filepaths(afilepaths, verbose=False):
@@ -89,13 +95,20 @@ def extracted_files_from_list_filepaths(afilepaths, verbose=False):
 
 def run():
     # First extract all the .msg files.
+    print("Extracting .msg files")
     extract_msg_attachments()
     # Then extract all the .zip files.
+    print("Extracting .zip files")
     extract_zip_attachments()
 
     if os.path.isdir(config.local_folder_mount_point_extracted) == False:
         os.makedirs(config.local_folder_mount_point_extracted)
 
     extracted_files_from_list_filepaths(
-        [afilepath for afilepath in glob(config.local_folder_mount_point + "/*")]
+        [
+            afilepath
+            for afilepath in glob(
+                os.path.join(config.local_folder_mount_point, "**", "*"), recursive=True
+            )
+        ]
     )

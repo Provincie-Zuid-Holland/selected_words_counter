@@ -25,7 +25,10 @@ class SelectedWordCounter:
             [
                 afilepath.replace("\\", "/")
                 for afilepath in glob(
-                    config.local_folder_mount_point_extracted + "/*.txt"
+                    os.path.join(
+                        config.local_folder_mount_point_extracted, "**", "*.txt"
+                    ),
+                    recursive=True,
                 )
             ],
         )
