@@ -148,15 +148,13 @@ def retrieve_counts_extension_types(adirectory):
     return sorted_file_types
 
 
-def generate_filename(version):
+def generate_filename(output_dir, version):
     """
     Generate a filename output based on the current date and the version.
 
     """
     current_date = datetime.now().strftime("%Y-%m-%d")  # Format as YYYY-MM-DD
-    filename = (
-        f"{config.output_dir}/selected_word_counter_output_{current_date}_v{version}"
-    )
+    filename = f"{output_dir}/selected_word_counter_output_{current_date}_v{version}"
     return filename
 
 
