@@ -7,11 +7,15 @@ from glob import glob
 import extract_msg
 from tqdm import tqdm
 
-import config
 from selected_words_counter.functions import process_file
 
 
-def process_and_save_file(afilepath, verbose=False):
+def process_and_save_file(
+    afilepath,
+    alocal_folder_mount_point,
+    alocal_folder_mount_point_extracted,
+    verbose=False,
+):
     if verbose:
         print("-------")
         print(afilepath)
@@ -21,14 +25,12 @@ def process_and_save_file(afilepath, verbose=False):
         text_content = process_file(afilepath)
 
         a_output_name = (
-            config.local_folder_mount_point_extracted
+            alocal_folder_mount_point_extracted
             + "/"
             + re.sub(
                 r"\.(?!.*\.)",
                 "_",
-                afilepath.replace(config.local_folder_mount_point, "").replace(
-                    "/", "#"
-                ),
+                afilepath.replace(alocal_folder_mount_point, "").replace("/", "#"),
             )
             + ".txt"
         )
@@ -41,9 +43,9 @@ def process_and_save_file(afilepath, verbose=False):
         print(f"Error processing {afilepath}: {e}")
 
 
-def extract_msg_attachments():
+def extract_msg_attachments(alocal_folder_mount_point):
     # Extract all .msg files into a directory
-    for afilepath in glob(config.local_folder_mount_point + "*.msg"):
+    for afilepath in glob(alocal_folder_mount_point + "*.msg"):
         afilepath = afilepath.replace("\\", "/")
         try:
             msg = extract_msg.Message(afilepath)
@@ -62,10 +64,10 @@ def extract_msg_attachments():
             print(e)
 
 
-def extract_zip_attachments():
+def extract_zip_attachments(alocal_folder_mount_point):
     # Extract a zip file into a new directory
 
-    for afilepath in glob(config.local_folder_mount_point + "*.zip"):
+    for afilepath in glob(alocal_folder_mount_point + "*.zip"):
         try:
             afilepath = afilepath.replace("\\", "/")
             print(afilepath)
@@ -80,10 +82,21 @@ def extract_zip_attachments():
             print(e)
 
 
-def extracted_files_from_list_filepaths(afilepaths, verbose=False):
+def extracted_files_from_list_filepaths(
+    afilepaths,
+    alocal_folder_mount_point,
+    alocal_folder_mount_point_extracted,
+    verbose=False,
+):
     with ThreadPoolExecutor() as executor:
         futures = {
-            executor.submit(process_and_save_file, afilepath, verbose): afilepath
+            executor.submit(
+                process_and_save_file,
+                afilepath,
+                alocal_folder_mount_point,
+                alocal_folder_mount_point_extracted,
+                verbose,
+            ): afilepath
             for afilepath in afilepaths
         }
         for future in tqdm(as_completed(futures), total=len(futures)):
@@ -93,22 +106,25 @@ def extracted_files_from_list_filepaths(afilepaths, verbose=False):
                 print(f"Exception occurred: {e}")
 
 
-def run():
+def run(alocal_folder_mount_point, alocal_folder_mount_point_extracted):
     # First extract all the .msg files.
     print("Extracting .msg files")
-    extract_msg_attachments()
+    extract_msg_attachments(alocal_folder_mount_point)
     # Then extract all the .zip files.
     print("Extracting .zip files")
-    extract_zip_attachments()
+    extract_zip_attachments(alocal_folder_mount_point)
 
-    if os.path.isdir(config.local_folder_mount_point_extracted) == False:
-        os.makedirs(config.local_folder_mount_point_extracted)
+    # Make a directory if the directory does not exist yet.
+    if os.path.isdir(alocal_folder_mount_point_extracted) == False:
+        os.makedirs(alocal_folder_mount_point_extracted)
 
     extracted_files_from_list_filepaths(
         [
             afilepath
             for afilepath in glob(
-                os.path.join(config.local_folder_mount_point, "**", "*"), recursive=True
+                os.path.join(alocal_folder_mount_point, "**", "*"), recursive=True
             )
-        ]
+        ],
+        alocal_folder_mount_point,
+        alocal_folder_mount_point_extracted,
     )

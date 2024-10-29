@@ -39,7 +39,15 @@ def main():
     if args.output_dir:
         config.output_dir = args.output_dir
 
-    aselected_words_counter_class = SelectedWordCounter()
+    aselected_words_counter_class = SelectedWordCounter(
+        config.aword_list,
+        config.local_folder_mount_point,
+        config.local_folder_mount_point_extracted,
+        config.keep_extracted,
+        config.output_dir,
+        keep_extract=config.keep_extracted,
+        version=1,
+    )
     aselected_words_counter_class.run()
 
 

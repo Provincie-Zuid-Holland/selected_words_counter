@@ -3,8 +3,6 @@ import re
 import pandas as pd
 from tqdm import tqdm
 
-import config
-
 
 def replace_underscore_with_period(ainput_string):
     # Replace the last underscore with a period in the file name because of the conversion to .txt
