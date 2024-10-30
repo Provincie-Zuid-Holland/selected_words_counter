@@ -116,7 +116,6 @@ def process_file(a_file_path):
                 with open(a_file_path, "r") as file:
                     # Read the content of the file
                     a_content = file.read()
-
             elif "pptx" in file_type:
                 a_content = read_pptx(a_file_path)
         except Exception as e:
@@ -124,28 +123,6 @@ def process_file(a_file_path):
             print(e)
 
     return a_content
-
-
-def retrieve_counts_extension_types(adirectory):
-    """Looks in a directory to find the number of files of each type.
-
-    TODO: This function can be included in tests
-    @param adirectory: a statement of a directory which can be read by glob.
-    """
-    file_types = {}
-
-    for file in glob(adirectory):
-        file_type = file.split(".")[-1]
-        if file_type not in file_types:
-            file_types[file_type] = 1
-        else:
-            file_types[file_type] += 1
-
-    # Sort the resulting list by file type in ascending order
-    sorted_file_types = sorted(file_types.items(), key=lambda x: x[1])
-
-    # Print the sorted file types
-    return sorted_file_types
 
 
 def generate_filename(output_dir, version):

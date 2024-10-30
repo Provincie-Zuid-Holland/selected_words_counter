@@ -47,6 +47,20 @@ def test_extract_files_run():
         len(found_file_paths) >= 10
     ), "Expected at least 10 files in text_dir_converted"
 
+    # Check pdf's have been converted.
+    assert len(open(glob(text_dir_converted + "/*_pdf.text")[0], "r").read()) > 0
+    # Check if pptx files have been converted.
+    assert len(open(glob(text_dir_converted + "/*_pptx.text")[0], "r").read()) > 0
+    # Check if docx files have been converted
+    assert len(open(glob(text_dir_converted + "/*_docx.text")[0], "r").read()) > 0
+    # Check if doc files have been converted
+    # TODO: it's hard to generate .doc files in python because of deprecated libraries, more effort needs to done to also generate these files.
+    # assert len(open(glob(text_dir_converted + "/*_doc.text")[0], "r").read()) > 0
+    # TODO: it's hard to generate .xls files in python because of deprecated libraries, more effort needs to done to also generate these files.
+    # assert len(open(glob(text_dir_converted + "/*_xls.text")[0], "r").read()) > 0
+    # Check if xlsx files have been converted
+    assert len(open(glob(text_dir_converted + "/*_xlsx.text")[0], "r").read()) > 0
+
     # Assert if files from directories made it in the convert folder
     for item in os.listdir(test_dir):
         item_path = os.path.join(test_dir, item)
@@ -64,9 +78,5 @@ def test_extract_files_run():
                     )
                     >= 1
                 ), "Expected a file in a directory to be found as with a # in it's name denoting the directory in the converted map"
-
-    assert (
-        len(open(found_file_paths[0], "r").read()) > 0
-    ), "ensure at least some words in the document"
 
     shutil.rmtree(text_dir_converted)
