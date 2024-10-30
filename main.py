@@ -47,6 +47,7 @@ def main():
         config.output_dir,
         keep_extract=config.keep_extracted,
         version=1,
+        multi_thread= config.multi_thread
     )
     aselected_words_counter_class.run()
 

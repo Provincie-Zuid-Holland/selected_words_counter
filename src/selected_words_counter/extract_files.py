@@ -87,26 +87,30 @@ def extracted_files_from_list_filepaths(
     alocal_folder_mount_point,
     alocal_folder_mount_point_extracted,
     verbose=False,
+    threads = False
 ):
-    with ThreadPoolExecutor() as executor:
-        futures = {
-            executor.submit(
-                process_and_save_file,
-                afilepath,
-                alocal_folder_mount_point,
-                alocal_folder_mount_point_extracted,
-                verbose,
-            ): afilepath
-            for afilepath in afilepaths
-        }
-        for future in tqdm(as_completed(futures), total=len(futures)):
-            try:
-                future.result()
-            except Exception as e:
-                print(f"Exception occurred: {e}")
+    if threads:
+        with ThreadPoolExecutor() as executor:
+            futures = {
+                executor.submit(
+                    process_and_save_file,
+                    afilepath,
+                    alocal_folder_mount_point,
+                    alocal_folder_mount_point_extracted,
+                    verbose,
+                ): afilepath
+                for afilepath in afilepaths
+            }
+            for future in tqdm(as_completed(futures), total=len(futures)):
+                try:
+                    future.result()
+                except Exception as e:
+                    print(f"Exception occurred: {e}")
+    else:
+        [process_and_save_file(afilepath,alocal_folder_mount_point, alocal_folder_mount_point_extracted,verbose ) for afilepath in afilepaths]
 
 
-def run(alocal_folder_mount_point, alocal_folder_mount_point_extracted):
+def run(alocal_folder_mount_point, alocal_folder_mount_point_extracted, amulti_thread = False):
     # First extract all the .msg files.
     print("Extracting .msg files")
     extract_msg_attachments(alocal_folder_mount_point)
@@ -127,4 +131,5 @@ def run(alocal_folder_mount_point, alocal_folder_mount_point_extracted):
         ],
         alocal_folder_mount_point,
         alocal_folder_mount_point_extracted,
+        threads=amulti_thread
     )

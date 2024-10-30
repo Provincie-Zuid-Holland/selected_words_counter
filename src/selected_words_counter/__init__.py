@@ -17,6 +17,7 @@ class SelectedWordCounter:
         keep_extract=True,
         version=1,
         output_extension=".xlsx",
+        multi_thread = False
     ):
         # Lower case all words for easier matching.
         self.aword_list = [aword.lower().replace(".", "") for aword in aword_list]
@@ -29,6 +30,7 @@ class SelectedWordCounter:
         self.keep_extract = keep_extract
         self.version = version
         self.output_extension = output_extension
+        self.multi_thread = multi_thread
 
     def run(self):
         if self.extract:
@@ -39,11 +41,12 @@ class SelectedWordCounter:
                 extract_files.run(
                     self.local_folder_mount_point,
                     self.local_folder_mount_point_extracted,
+                    self.multi_thread
                 )
 
         print("Finding words:")
         df = counting.word_counting_in_files(
-            config.aword_list,
+            self.aword_list,
             [
                 afilepath.replace("\\", "/")
                 for afilepath in glob(
@@ -66,4 +69,6 @@ class SelectedWordCounter:
         print(f"Output found at {filename_output}")
 
         if config.keep_extracted == False:
-            functions.delete_directory(config.local_folder_mount_point_extracted)
+            functions.delete_directory(self.local_folder_mount_point_extracted)
+        
+        return filename_output
