@@ -9,6 +9,12 @@ from tqdm import tqdm
 
 from selected_words_counter.functions import process_file
 
+"""
+
+This file is used to store code for extracting text from different file formats.
+
+@author: Michael de Winter
+"""
 
 def process_and_save_file(
     afilepath,
@@ -16,6 +22,15 @@ def process_and_save_file(
     alocal_folder_mount_point_extracted,
     verbose=False,
 ):
+    """
+
+    Method to call process_file and correctly generate a filename if it contains subdirectories.
+
+    @param afilepath: Path to a specific file.
+    @param alocal_folder_mount_point: the original directory of the file is stripped from the filename for naming purposes to get it's subdirectory.
+    @oaram alocal_folder_mount_point_extracted: directory in which the file will be stored.
+    """
+
     if verbose:
         print("-------")
         print(afilepath)
@@ -23,7 +38,8 @@ def process_and_save_file(
 
     try:
         text_content = process_file(afilepath)
-
+        
+        # Generate a output name but if there are subdirectories in the directory put the subdirectories name in the filename.
         a_output_name = (
             alocal_folder_mount_point_extracted
             + "/"
@@ -44,6 +60,12 @@ def process_and_save_file(
 
 
 def extract_msg_attachments(alocal_folder_mount_point):
+    """
+    
+    Extract all .msg files in a directory.
+
+    @param alocal_folder_mount_point: directory where the .msg files are stored.
+    """
     # Extract all .msg files into a directory
     for afilepath in glob(alocal_folder_mount_point + "*.msg"):
         afilepath = afilepath.replace("\\", "/")
@@ -65,6 +87,12 @@ def extract_msg_attachments(alocal_folder_mount_point):
 
 
 def extract_zip_attachments(alocal_folder_mount_point):
+    """
+    
+    Extract all .zip files in a directory.
+    
+    @param alocal_folder_mount_point: directory where the .zip files are stored.
+    """
     # Extract a zip file into a new directory
 
     for afilepath in glob(alocal_folder_mount_point + "*.zip"):
@@ -87,26 +115,47 @@ def extracted_files_from_list_filepaths(
     alocal_folder_mount_point,
     alocal_folder_mount_point_extracted,
     verbose=False,
+    threads = False
 ):
-    with ThreadPoolExecutor() as executor:
-        futures = {
-            executor.submit(
-                process_and_save_file,
-                afilepath,
-                alocal_folder_mount_point,
-                alocal_folder_mount_point_extracted,
-                verbose,
-            ): afilepath
-            for afilepath in afilepaths
-        }
-        for future in tqdm(as_completed(futures), total=len(futures)):
-            try:
-                future.result()
-            except Exception as e:
-                print(f"Exception occurred: {e}")
+    """
+
+    Method to extract all files in directory in a .txt format in a other directory for easy searching and snapshotting.
+
+    @param afilepaths: a array of filepaths to be extracted to .txt files.
+    @param alocal_folder_mount_point: the original directory of the file is stripped from the filename for naming purposes to get it's subdirectory.
+    @oaram alocal_folder_mount_point_extracted: directory in which the file will be stored.
+    @param verbose: Wether to print more output.
+    @param threads: Wether to multiprocess with the file reading thus speeding up the process but not all systems can handle it. 
+    """
+    if threads:
+        with ThreadPoolExecutor() as executor:
+            futures = {
+                executor.submit(
+                    process_and_save_file,
+                    afilepath,
+                    alocal_folder_mount_point,
+                    alocal_folder_mount_point_extracted,
+                    verbose,
+                ): afilepath
+                for afilepath in afilepaths
+            }
+            for future in tqdm(as_completed(futures), total=len(futures)):
+                try:
+                    future.result()
+                except Exception as e:
+                    print(f"Exception occurred: {e}")
+    else:
+        [process_and_save_file(afilepath,alocal_folder_mount_point, alocal_folder_mount_point_extracted,verbose ) for afilepath in afilepaths]
 
 
-def run(alocal_folder_mount_point, alocal_folder_mount_point_extracted):
+def run(alocal_folder_mount_point, alocal_folder_mount_point_extracted, amulti_thread = False):
+    """
+    Method to run the process.
+
+    @param alocal_folder_mount_point: the original directory of the file is stripped from the filename for naming purposes to get it's subdirectory.
+    @oaram alocal_folder_mount_point_extracted: directory in which the file will be stored.
+    @param amulti_thread: Wether to multiprocess with the file reading thus speeding up the process but not all systems can handle it. 
+    """
     # First extract all the .msg files.
     print("Extracting .msg files")
     extract_msg_attachments(alocal_folder_mount_point)
@@ -127,4 +176,5 @@ def run(alocal_folder_mount_point, alocal_folder_mount_point_extracted):
         ],
         alocal_folder_mount_point,
         alocal_folder_mount_point_extracted,
+        threads=amulti_thread
     )
