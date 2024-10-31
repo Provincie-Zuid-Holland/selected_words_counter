@@ -1,7 +1,4 @@
 import argparse
-import os
-from glob import glob
-
 import config
 from selected_words_counter import SelectedWordCounter
 

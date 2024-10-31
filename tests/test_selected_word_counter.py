@@ -114,7 +114,7 @@ def test_count_files():
 
 def test_no_extract():
 
-    aword_list_test = ["thy","banana", "cingular", "cheat", "companion", "satisfaction"]
+    aword_list_test = ["floppy","banana", "cingular", "cheat", "companion", "satisfaction"]
 
     result_output = SelectedWordCounter(aword_list_test, test_dir, test_dir_converted_test, test_dir_output, extract = False).run()
 
@@ -126,7 +126,7 @@ def test_no_extract():
 
     # Dictionary to store expected word counts per file format
     expected_counts = {
-        "arabia registry regardless under four directions.docx": {"thy": 2, "banana": 1},
+        "arabia registry regardless under four directions.docx": {"floppy": 1, "banana": 1},
         "balance session rest wholesale pins timothy.docx": {"cingular": 1, "cheat": 1},
         "ban handle monte gba spreading nine.pdf": {"companion": 1, "satisfaction": 1},
     }
