@@ -5,8 +5,6 @@ from glob import glob
 import config
 from selected_words_counter import SelectedWordCounter
 
-version = 4
-
 
 def main():
     # Create an argument parser
@@ -45,7 +43,7 @@ def main():
         config.local_folder_mount_point_extracted,
         config.output_dir,
         keep_extract=config.keep_extracted,
-        extract = config.extract
+        extract = config.extract,
         version=1,
         multi_thread= config.multi_thread
     )
