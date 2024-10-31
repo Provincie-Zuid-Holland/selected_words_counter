@@ -43,9 +43,9 @@ def main():
         config.aword_list,
         config.local_folder_mount_point,
         config.local_folder_mount_point_extracted,
-        config.keep_extracted,
         config.output_dir,
         keep_extract=config.keep_extracted,
+        extract = config.extract
         version=1,
         multi_thread= config.multi_thread
     )

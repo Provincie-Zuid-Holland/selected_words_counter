@@ -14,6 +14,7 @@ from selected_words_counter import (
 # Reference testing varialbes.
 test_dir = "./test_data/"
 test_dir_converted = "./test_data_converted/"
+test_dir_converted_test = "./test_data_converted_test/"
 test_dir_output ="./test_output"
 
 def replace_last_slash(path, replacement=""):
@@ -86,7 +87,7 @@ def test_count_files():
 
     aword_list_test = ["fireplace","dreams", "hybrid", "technological", "collapse", "netherlands"]
 
-    result_output = SelectedWordCounter(aword_list_test, test_dir, test_dir_converted, False, test_dir_output).run()
+    result_output = SelectedWordCounter(aword_list_test, test_dir, test_dir_converted, test_dir_output, keep_extract=False).run()
 
     # Check if there is output
     assert len(glob(test_dir_output+"/*")) >= 1
@@ -109,4 +110,34 @@ def test_count_files():
 
 
     os.remove(result_output+".xlsx")
+
+
+def test_no_extract():
+
+    aword_list_test = ["thy","banana", "cingular", "cheat", "companion", "satisfaction"]
+
+    result_output = SelectedWordCounter(aword_list_test, test_dir, test_dir_converted_test, test_dir_output, extract = False).run()
+
+    # Check if there is output
+    assert len(glob(test_dir_output+"/*")) >= 1
+
+    # Check the contents of the file
+    df = pd.read_excel(result_output+".xlsx")
+
+    # Dictionary to store expected word counts per file format
+    expected_counts = {
+        "arabia registry regardless under four directions.docx": {"thy": 2, "banana": 1},
+        "balance session rest wholesale pins timothy.docx": {"cingular": 1, "cheat": 1},
+        "ban handle monte gba spreading nine.pdf": {"companion": 1, "satisfaction": 1},
+    }
+
+    # Loop through each file format and check counts
+    for filepath, words in expected_counts.items():
+        test_file = df[df["Filepath"] == filepath]
+        for word, count in words.items():
+            assert test_file[word].values[0] == count, f"{filepath} should contain {word} {count} times"
+
+
+    os.remove(result_output+".xlsx")
+
     

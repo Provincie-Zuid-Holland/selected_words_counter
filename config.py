@@ -14,3 +14,6 @@ output_dir = "./output/"
 keep_extracted = False
 # Wether to multithread read in of files, a possible speed up but currently not always working
 multi_thread = False
+
+#Set this to false if files have already been extracted.
+extract = True
