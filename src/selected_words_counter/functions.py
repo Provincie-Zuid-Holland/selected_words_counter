@@ -13,11 +13,11 @@ from docx import Document
 import config
 
 """ 
-This code contains all functions for reading in different file formats 
+This code contains all functions for reading in different file formats.
 
+
+@author: Michael de Winter
 """
-## Author: Michael de Winter
-
 
 # Different functions for opening files.
 def read_pdf(file_path):
@@ -87,7 +87,8 @@ def read_pptx(file_path):
 
 def process_file(a_file_path):
     """
-    Open a file  based on a file extension.
+
+    Open a file based on a file extension.
 
     @param a_file_path: File path to a file.
     """
@@ -129,6 +130,8 @@ def generate_filename(output_dir, version):
     """
     Generate a filename output based on the current date and the version.
 
+    @param output_dir: The directory to base the filename on.
+    @param version: Give a version to the output name. 
     """
     current_date = datetime.now().strftime("%Y-%m-%d")  # Format as YYYY-MM-DD
     filename = f"{output_dir}/selected_word_counter_output_{current_date}_v{version}"
