@@ -16,11 +16,11 @@
 ### Installation
 Clone this repository and install the dependencies:
 
-    ```bash
-    git clone https://github.com/your-username/selected-words-counter.git
-    cd selected-words-counter
-    pip install -r requirements.txt
-    ```
+```bash
+git clone https://github.com/your-username/selected-words-counter.git
+cd selected-words-counter
+pip install -r requirements.txt
+ ```
 
 ### Configuration
 Customize the `config.py` file to specify:
