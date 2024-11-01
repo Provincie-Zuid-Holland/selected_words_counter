@@ -2,6 +2,7 @@ import os
 import random
 import string
 import zipfile
+from glob import glob
 
 import openpyxl
 import requests
@@ -15,6 +16,15 @@ except ImportError:
     win32com = (
         None  # win32com is only available on Windows systems with pywin32 installed
     )
+
+
+"""
+
+This script is used to generate synthetic data for testing selected words counter.
+
+@author: Michael de Winter
+
+"""
 
 word_site = "https://www.mit.edu/~ecprice/wordlist.10000"
 
@@ -57,7 +67,10 @@ def create_xlsx(filename):
     ws = wb.active
     for row in range(1, 11):
         for col in range(1, 6):
-            ws.cell(row=row, column=col).value = random.randint(1, 100)
+            if random.randint(0, 50) > 40:
+                ws.cell(row=row, column=col).value = random.randint(1, 100)
+            else:
+                ws.cell(row=row, column=col).value = random_text(10)
     wb.save(filename)
     print(f"Created {filename}")
 
@@ -106,21 +119,22 @@ def create_msg(filename):
 
 
 def main():
+    test_data_store = "./test_data/"
     # Params for the amount of documents made.
-    amount_of_documents = 70
-    for xi in range(0, amount_of_documents):
+    amount_of_files = 100
+    while len(glob("./test_data/*")) < amount_of_files:
         if random.randint(0, 50) > 10:
-            create_docx("./data/" + random_text(6) + ".docx")
+            create_docx("./test_data/" + random_text(6) + ".docx")
         if random.randint(0, 50) > 25:
-            create_pptx("./data/" + random_text(6) + ".pptx")
+            create_pptx("./test_data/" + random_text(6) + ".pptx")
         if random.randint(0, 50) > 35:
-            create_xlsx("./data/" + random_text(6) + ".xlsx")
+            create_xlsx("./test_data/" + random_text(6) + ".xlsx")
         if random.randint(0, 50) > 15:
-            create_pdf("./data/" + random_text(6) + ".pdf")
+            create_pdf("./test_data/" + random_text(6) + ".pdf")
         if random.randint(0, 50) > 45:
-            create_zip("./data/" + random_text(6) + ".zip")
+            create_zip("./test_data/" + random_text(6) + ".zip")
         if random.randint(0, 50) > 45:
-            create_msg("./data/" + random_text(6) + ".msg")
+            create_msg("./test_data/" + random_text(6) + ".msg")
 
 
 if __name__ == "__main__":
