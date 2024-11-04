@@ -19,6 +19,7 @@ This code contains all functions for reading in different file formats.
 @author: Michael de Winter
 """
 
+
 # Different functions for opening files.
 def read_pdf(file_path):
     text = ""
@@ -131,7 +132,7 @@ def generate_filename(output_dir, version):
     Generate a filename output based on the current date and the version.
 
     @param output_dir: The directory to base the filename on.
-    @param version: Give a version to the output name. 
+    @param version: Give a version to the output name.
     """
     current_date = datetime.now().strftime("%Y-%m-%d")  # Format as YYYY-MM-DD
     filename = f"{output_dir}/selected_word_counter_output_{current_date}_v{version}"
@@ -164,6 +165,17 @@ class FilterMinWords:
                 # self.hits =self.hits[~self.hits['Bestandsnaam in export'].str.lower().str.contains(word.lower())]
 
         return self.hits
+
+
+def replace_last_slash(path, replacement=""):
+    """
+    This function is used for testing.
+
+    @param path: path to be split.
+    @param replacement: value to replace / with.
+    """
+    parts = path.rsplit("/", 1)
+    return replacement.join(parts)
 
 
 def delete_directory(path):

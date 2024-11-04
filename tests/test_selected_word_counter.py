@@ -2,8 +2,9 @@ import os
 import shutil
 from glob import glob
 
-import config
 import pandas as pd
+
+import config
 from selected_words_counter import (
     SelectedWordCounter,
     counting,
@@ -15,11 +16,7 @@ from selected_words_counter import (
 test_dir = "./test_data/"
 test_dir_converted = "./test_data_converted/"
 test_dir_converted_test = "./test_data_converted_test/"
-test_dir_output ="./test_output"
-
-def replace_last_slash(path, replacement=""):
-    parts = path.rsplit("/", 1)
-    return replacement.join(parts)
+test_dir_output = "./test_output"
 
 
 def test_unzipping():
@@ -75,7 +72,7 @@ def test_extract_files_run():
                         glob(
                             test_dir_converted
                             # Replace directory slashes with # to make one file name while still knowing the original directory
-                            + f"/{replace_last_slash(afilepath, replacement="#").split("/")[-1].split(".")[0]}*.txt"
+                            + f"/{functions.replace_last_slash(afilepath, replacement="#").split("/")[-1].split(".")[0]}*.txt"
                         )
                     )
                     >= 1
@@ -83,22 +80,38 @@ def test_extract_files_run():
 
     shutil.rmtree(test_dir_converted)
 
+
 def test_count_files():
+    aword_list_test = [
+        "fireplace",
+        "dreams",
+        "hybrid",
+        "technological",
+        "collapse",
+        "netherlands",
+    ]
 
-    aword_list_test = ["fireplace","dreams", "hybrid", "technological", "collapse", "netherlands"]
-
-    result_output = SelectedWordCounter(aword_list_test, test_dir, test_dir_converted, test_dir_output, keep_extract=False).run()
+    result_output = SelectedWordCounter(
+        aword_list_test,
+        test_dir,
+        test_dir_converted,
+        test_dir_output,
+        keep_extract=False,
+    ).run()
 
     # Check if there is output
-    assert len(glob(test_dir_output+"/*")) >= 1
+    assert len(glob(test_dir_output + "/*")) >= 1
 
     # Check the contents of the file
-    df = pd.read_excel(result_output+".xlsx")
+    df = pd.read_excel(result_output + ".xlsx")
 
     # Dictionary to store expected word counts per file format
     expected_counts = {
         "coated pendant hunter allowing can margin.docx": {"fireplace": 2, "dreams": 1},
-        "copyright endless dumb bandwidth trading define.xlsx": {"hybrid": 1, "technological": 1},
+        "copyright endless dumb bandwidth trading define.xlsx": {
+            "hybrid": 1,
+            "technological": 1,
+        },
         "alter strip lucy z cemetery kinds.pdf": {"collapse": 1, "netherlands": 1},
     }
 
@@ -106,27 +119,43 @@ def test_count_files():
     for filepath, words in expected_counts.items():
         test_file = df[df["Filepath"] == filepath]
         for word, count in words.items():
-            assert test_file[word].values[0] == count, f"{filepath} should contain {word} {count} times"
+            assert (
+                test_file[word].values[0] == count
+            ), f"{filepath} should contain {word} {count} times"
 
-
-    os.remove(result_output+".xlsx")
+    os.remove(result_output + ".xlsx")
 
 
 def test_no_extract():
+    aword_list_test = [
+        "floppy",
+        "banana",
+        "cingular",
+        "cheat",
+        "companion",
+        "satisfaction",
+    ]
 
-    aword_list_test = ["floppy","banana", "cingular", "cheat", "companion", "satisfaction"]
-
-    result_output = SelectedWordCounter(aword_list_test, test_dir, test_dir_converted_test, test_dir_output, extract = False).run()
+    result_output = SelectedWordCounter(
+        aword_list_test,
+        test_dir,
+        test_dir_converted_test,
+        test_dir_output,
+        extract=False,
+    ).run()
 
     # Check if there is output
-    assert len(glob(test_dir_output+"/*")) >= 1
+    assert len(glob(test_dir_output + "/*")) >= 1
 
     # Check the contents of the file
-    df = pd.read_excel(result_output+".xlsx")
+    df = pd.read_excel(result_output + ".xlsx")
 
     # Dictionary to store expected word counts per file format
     expected_counts = {
-        "arabia registry regardless under four directions.docx": {"floppy": 1, "banana": 1},
+        "arabia registry regardless under four directions.docx": {
+            "floppy": 1,
+            "banana": 1,
+        },
         "balance session rest wholesale pins timothy.docx": {"cingular": 1, "cheat": 1},
         "ban handle monte gba spreading nine.pdf": {"companion": 1, "satisfaction": 1},
     }
@@ -135,9 +164,8 @@ def test_no_extract():
     for filepath, words in expected_counts.items():
         test_file = df[df["Filepath"] == filepath]
         for word, count in words.items():
-            assert test_file[word].values[0] == count, f"{filepath} should contain {word} {count} times"
+            assert (
+                test_file[word].values[0] == count
+            ), f"{filepath} should contain {word} {count} times"
 
-
-    os.remove(result_output+".xlsx")
-
-    
+    os.remove(result_output + ".xlsx")

@@ -1,4 +1,5 @@
 import argparse
+
 import config
 from selected_words_counter import SelectedWordCounter
 
@@ -15,9 +16,32 @@ def main():
         "--local_folder_mount_point", type=str, help="The directory to read files from"
     )
     parser.add_argument(
-        "--keep_extracted", type=str, help="Wether to keep the extracted .txt files."
+        "--local_folder_mount_point_extracted",
+        type=str,
+        help="The directory to read files from",
     )
+
     parser.add_argument("--output_dir", type=str, help="Where to store the output file")
+
+    parser.add_argument(
+        "--keep_extracted",
+        type=str,
+        help="Wether the file extraction should be kept, which is used a intermittent step",
+    )
+    parser.add_argument(
+        "--extract",
+        type=str,
+        help="Wether to extract files, use this only if files have already been extracted.",
+    )
+    parser.add_argument(
+        "--version",
+        type=str,
+        help="Wether to extract files, use this only if files have already been extracted.",
+    )
+
+    parser.add_argument(
+        "--multi_thread", type=str, help="Where to store the output file"
+    )
 
     # Parse the command-line arguments
     args = parser.parse_args()
@@ -29,10 +53,20 @@ def main():
         config.aword_list = aword_list
     if args.local_folder_mount_point:
         config.local_folder_mount_point = args.local_folder_mount_point
-    if args.keep_extracted:
-        config.keep_extracted = args.keep_extracted
+    if args.local_folder_mount_point_extracted:
+        config.local_folder_mount_point_extracted = (
+            args.local_folder_mount_point_extracted
+        )
     if args.output_dir:
         config.output_dir = args.output_dir
+    if args.keep_extracted:
+        config.keep_extracted = args.keep_extracted
+    if args.extract:
+        config.extract = args.extract
+    if args.version:
+        config.version = args.version
+    if args.multi_thread:
+        config.multi_thread = args.multi_thread
 
     aselected_words_counter_class = SelectedWordCounter(
         config.aword_list,
@@ -40,9 +74,9 @@ def main():
         config.local_folder_mount_point_extracted,
         config.output_dir,
         keep_extract=config.keep_extracted,
-        extract = config.extract,
-        version=1,
-        multi_thread= config.multi_thread
+        extract=config.extract,
+        version=config.version,
+        multi_thread=config.multi_thread,
     )
     aselected_words_counter_class.run()
 
