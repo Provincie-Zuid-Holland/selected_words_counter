@@ -6,11 +6,9 @@ aword_list = [aword.lower().replace(".", "") for aword in aword_list]
 
 # Directories Settings
 # Directory with data in it where the words should be found
-local_folder_mount_point = "./data/"
+target_dir = "./data/"
 # Directory where to write the converted data to.
-local_folder_mount_point_extracted = (
-    local_folder_mount_point[::-1].replace("/", "", 1)[::-1] + "_converted/"
-)
+target_dir_extracted = target_dir[::-1].replace("/", "", 1)[::-1] + "_converted/"
 
 
 # Extracting settings.

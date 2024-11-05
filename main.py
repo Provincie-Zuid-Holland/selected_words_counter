@@ -1,7 +1,7 @@
 import argparse
 
 import config
-from selected_words_counter import SelectedWordCounter
+from selected_words_counter.selected_words_counter import SelectedWordCounter
 
 
 def main():
@@ -13,10 +13,10 @@ def main():
     # Add arguments for the config parameters you want to override
     parser.add_argument("--aword_list", type=str, help="Words array to be counted")
     parser.add_argument(
-        "--local_folder_mount_point", type=str, help="The directory to read files from"
+        "--target_dir", type=str, help="The directory to read files from"
     )
     parser.add_argument(
-        "--local_folder_mount_point_extracted",
+        "--target_dir_extracted",
         type=str,
         help="The directory to read files from",
     )
@@ -51,12 +51,10 @@ def main():
         # Lower case all words for easier matching.
         aword_list = [aword.lower().replace(".", "") for aword in args.aword_list]
         config.aword_list = aword_list
-    if args.local_folder_mount_point:
-        config.local_folder_mount_point = args.local_folder_mount_point
-    if args.local_folder_mount_point_extracted:
-        config.local_folder_mount_point_extracted = (
-            args.local_folder_mount_point_extracted
-        )
+    if args.target_dir:
+        config.target_dir = args.target_dir
+    if args.target_dir_extracted:
+        config.target_dir_extracted = args.target_dir_extracted
     if args.output_dir:
         config.output_dir = args.output_dir
     if args.keep_extracted:
@@ -70,8 +68,8 @@ def main():
 
     aselected_words_counter_class = SelectedWordCounter(
         config.aword_list,
-        config.local_folder_mount_point,
-        config.local_folder_mount_point_extracted,
+        config.target_dir,
+        config.target_dir_extracted,
         config.output_dir,
         keep_extract=config.keep_extracted,
         extract=config.extract,
