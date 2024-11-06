@@ -24,4 +24,3 @@ extract = True
 # Output Settings.
 # Directory to output data to.
 output_dir = "./output/"
-version = 1

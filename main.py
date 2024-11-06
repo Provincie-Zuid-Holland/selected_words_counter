@@ -33,11 +33,6 @@ def main():
         type=str,
         help="Wether to extract files, use this only if files have already been extracted.",
     )
-    parser.add_argument(
-        "--version",
-        type=str,
-        help="Wether to extract files, use this only if files have already been extracted.",
-    )
 
     parser.add_argument(
         "--multi_thread", type=str, help="Where to store the output file"
@@ -61,8 +56,6 @@ def main():
         config.keep_extracted = args.keep_extracted
     if args.extract:
         config.extract = args.extract
-    if args.version:
-        config.version = args.version
     if args.multi_thread:
         config.multi_thread = args.multi_thread
 
@@ -73,7 +66,6 @@ def main():
         config.output_dir,
         keep_extract=config.keep_extracted,
         extract=config.extract,
-        version=config.version,
         multi_thread=config.multi_thread,
     )
     aselected_words_counter_class.run()

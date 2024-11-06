@@ -2,3 +2,4 @@
 __pycache__/
 *.pyc
 ./data
+./src/selected_words_counter.egg-info/*
