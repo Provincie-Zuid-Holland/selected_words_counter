@@ -1,0 +1,5 @@
+./src/selected_words_counter/__pycache__/*
+__pycache__/
+*.pyc
+./data
+./src/selected_words_counter.egg-info/*
