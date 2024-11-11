@@ -9,9 +9,9 @@ from glob import glob
 import extract_msg
 import pandas as pd
 import pptx
-import PyPDF2
 import textract
 from docx import Document
+from pypdf import PdfReader
 from tqdm import tqdm
 
 """
@@ -42,9 +42,9 @@ def process_and_save_file(
         print(afilepath)
     afilepath = afilepath.replace("\\", "/")
 
-    try:
-        text_content = process_file(afilepath)
+    text_content = process_file(afilepath)
 
+    try:
         # Generate a output name but if there are subdirectories in the directory put the subdirectories name in the filename.
         a_output_name = (
             atarget_dir_extracted
@@ -58,11 +58,10 @@ def process_and_save_file(
         )
         if verbose:
             print(a_output_name)
-        with open(a_output_name, "w") as file:
+        with open(a_output_name, "w", encoding="utf-8") as file:
             file.write(str(text_content))
-
     except Exception as e:
-        print(f"Error processing {afilepath}: {e}")
+        print("Error with writing file: " + e)
 
 
 def make_dir_from_filename(afilepath):
@@ -86,19 +85,26 @@ def extract_msg_attachments(atarget_dir):
     # Extract all .msg files into a directory
     for afilepath in glob(atarget_dir + "*.msg"):
         afilepath = afilepath.replace("\\", "/")
-        try:
-            msg = extract_msg.Message(afilepath)
 
-            if len(msg.attachments) > 0:
-                a_output_directory = make_dir_from_filename(afilepath)
+        encodings = ["utf-8", "ISO-8859-1", "windows-1252"]
+        for encoding in encodings:
+            try:
+                msg = extract_msg.Message(afilepath, overrideEncoding=encoding)
 
-                for item in range(0, len(msg.attachments)):
-                    att = msg.attachments[item]
-                    msg.attachments[item].save(
-                        customPath=a_output_directory, customFilename=att.longFilename
-                    )
-        except Exception as e:
-            print(e)
+                if len(msg.attachments) > 0:
+                    a_output_directory = make_dir_from_filename(afilepath)
+
+                    for item in range(0, len(msg.attachments)):
+                        att = msg.attachments[item]
+                        msg.attachments[item].save(
+                            customPath=a_output_directory,
+                            customFilename=att.longFilename,
+                        )
+                return 0
+            except Exception as e:
+                continue
+        print(f"Failed to read {afilepath} with all tested encodings.")
+        return None
 
 
 def extract_zip_attachments(atarget_dir):
@@ -154,12 +160,10 @@ def extracted_files_from_list_filepaths(
                 except Exception as e:
                     print(f"Exception occurred: {e}")
     else:
-        [
+        for afilepath in tqdm(afilepaths):
             process_and_save_file(
                 afilepath, atarget_dir, atarget_dir_extracted, verbose
             )
-            for afilepath in afilepaths
-        ]
 
 
 def run(atarget_dir, atarget_dir_extracted, amulti_thread=False):
@@ -196,18 +200,23 @@ def run(atarget_dir, atarget_dir_extracted, amulti_thread=False):
 def read_pdf(file_path):
     text = ""
     try:
+        # Open the PDF file
         with open(file_path, "rb") as file:
-            pdf_reader = PyPDF2.PdfReader(file)
+            # Create a PDF reader object
+            pdf_reader = PdfReader(file)
+
+            # Get the number of pages in the PDF
             num_pages = len(pdf_reader.pages)
+            print(f"Number of pages: {num_pages}")
+
+            # Extract text from each page
             for page_num in range(num_pages):
                 page = pdf_reader.pages[page_num]
-                page_text = page.extract_text()
-
-                # Handle encoding issues with utf-8-sig and replace errors
-                if page_text:
-                    text += page_text.encode("utf-8-sig", errors="replace").decode(
-                        "utf-8-sig", errors="replace"
-                    )
+                text += (
+                    page.extract_text()
+                    .encode("utf-8", errors="ignore")
+                    .decode("utf-8", errors="ignore")
+                )
 
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
@@ -224,14 +233,22 @@ def read_docx(file_path):
 
 
 def read_msg(file_path):
-    msg = extract_msg.Message(file_path)
-    msg_text = "Sender: " + str(msg.sender) + " | \n "
-    msg_text = msg_text + "To: " + str(msg.to) + " | \n "
-    msg_text = msg_text + "CC: " + str(msg.cc) + " | \n "
-    msg_text = msg_text + "BCC: " + str(msg.bcc) + " | \n "
-    msg_text = msg_text + "Subject: " + str(msg.subject) + " | \n "
-    msg_text = msg_text + "Body: " + str(msg.body)
-    return msg_text
+    encodings = ["utf-8", "ISO-8859-1", "windows-1252"]
+    for encoding in encodings:
+        try:
+            msg = extract_msg.Message(file_path, overrideEncoding=encoding)
+            msg_text = "Sender: " + str(msg.sender) + " | \n "
+            msg_text += "To: " + str(msg.to) + " | \n "
+            msg_text += "CC: " + str(msg.cc) + " | \n "
+            msg_text += "BCC: " + str(msg.bcc) + " | \n "
+            msg_text += "Subject: " + str(msg.subject) + " | \n "
+            msg_text += "Body: " + str(msg.body)
+            return msg_text  # Return if successful
+        except Exception as e:
+            continue  # Try the next encoding if an error occurs
+
+    print(f"Failed to read {file_path} with all tested encodings.")
+    return None  # Return None if all encoding attempts fail
 
 
 def read_xls(file_path):
@@ -293,7 +310,7 @@ def process_file(a_file_path):
             elif "pptx" in file_type:
                 a_content = read_pptx(a_file_path)
         except Exception as e:
-            print("Errow with " + a_file_path)
+            print("Errow with Reading " + a_file_path)
             print(e)
 
     return a_content

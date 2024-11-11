@@ -10,6 +10,7 @@ from selected_words_counter.selected_words_counter import SelectedWordCounter
 
 # Reference testing varialbes.
 test_dir = "./test_data/"
+test_dir_nl = "./test_data_nl/"
 test_dir_converted = "./test_data_converted/"
 test_dir_converted_test = "./test_data_converted_test/"
 test_dir_output = "./test_output"
@@ -81,6 +82,11 @@ def test_extract_files_run():
     finally:
         shutil.rmtree(test_dir_converted)
 
+        for item in os.listdir(test_dir):
+            item_path = os.path.join(test_dir, item)
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+
 
 def test_count_files():
     try:
@@ -91,6 +97,7 @@ def test_count_files():
             "technological",
             "collapse",
             "netherlands",
+            "fuji",
         ]
 
         result_output = SelectedWordCounter(
@@ -118,6 +125,7 @@ def test_count_files():
                 "technological": 1,
             },
             "alter strip lucy z cemetery kinds.pdf": {"collapse": 1, "netherlands": 1},
+            "companies continuing politics tex parcel glass.msg": {"fuji": 1},
         }
 
         # Loop through each file format and check counts
@@ -130,6 +138,11 @@ def test_count_files():
     finally:
         os.remove(result_output + ".xlsx")
 
+        for item in os.listdir(test_dir):
+            item_path = os.path.join(test_dir, item)
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+
 
 def test_no_extract():
     try:
@@ -140,6 +153,7 @@ def test_no_extract():
             "cheat",
             "companion",
             "satisfaction",
+            "fuji",
         ]
 
         result_output = SelectedWordCounter(
@@ -181,3 +195,69 @@ def test_no_extract():
                 ), f"{filepath} should contain {word} {count} times"
     finally:
         os.remove(result_output + ".xlsx")
+        for item in os.listdir(test_dir):
+            item_path = os.path.join(test_dir, item)
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+
+
+def test_count_files_nl():
+    try:
+        aword_list_test = [
+            "relaties",
+            "familiebanden",
+            "communiceren",
+            "filmpjes",
+            "geschiedenis",
+            "nederland",
+            "smits",
+            "verblijfkosten",
+            "cruijff",
+            "halsema",
+        ]
+
+        result_output = SelectedWordCounter(
+            aword_list_test,
+            test_dir_nl,
+            test_dir_converted,
+            test_dir_output,
+            keep_extract=False,
+        ).run()
+
+        # Check if there is output
+        assert len(glob(test_dir_output + "/*")) >= 1
+
+        # Check the contents of the file
+        df = pd.read_excel(result_output + ".xlsx")
+
+        # Dictionary to store expected word counts per file format
+        expected_counts = {
+            "analyse_analyse_20241109_191154.docx": {
+                "relaties": 4,
+                "familiebanden": 2,
+            },
+            "onderzoek_beschrijving_20241109_165724.pptx": {
+                "communiceren": 2,
+                "filmpjes": 1,
+            },
+            "gmb-2024-469908.pdf": {
+                "smits": 1,
+                "verblijfkosten": 6,
+            },
+            "gmb-2024-471945.pdf": {"cruijff": 6, "halsema": 1},
+        }
+
+        # Loop through each file format and check counts
+        for filepath, words in expected_counts.items():
+            test_file = df[df["Filepath"] == filepath]
+            for word, count in words.items():
+                assert (
+                    test_file[word].values[0] == count
+                ), f"{filepath} should contain {word} {count} times"
+    finally:
+        os.remove(result_output + ".xlsx")
+
+        for item in os.listdir(test_dir_nl):
+            item_path = os.path.join(test_dir_nl, item)
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)

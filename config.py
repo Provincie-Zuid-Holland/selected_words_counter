@@ -1,6 +1,15 @@
 # Word lists Settings
 # Example words to be found, make you own word list here
-aword_list = ["Hero", "Big", "City", "Dutch", "Omgeving"]
+aword_list = [
+    "Hero",
+    "Big",
+    "City",
+    "Dutch",
+    "Omgeving",
+    "Wolfsen",
+    "Ministerie van Justitie en Veiligheid",
+    "Wingelaar",
+]
 # Lower case all words for easier matching.
 aword_list = [aword.lower().replace(".", "") for aword in aword_list]
 
@@ -15,7 +24,7 @@ target_dir_extracted = target_dir[::-1].replace("/", "", 1)[::-1] + "_converted/
 # Wether to delete converted data.
 keep_extracted = False
 # Wether to multithread read in of files, a possible speed up but currently not always working
-multi_thread = False
+multi_thread = True
 
 # Set this to false if files have already been extracted.
 extract = True

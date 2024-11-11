@@ -19,7 +19,9 @@ def replace_underscore_with_period(ainput_string):
     return re.sub("_(?!.*_)", ".", ainput_string)
 
 
-def word_counting_in_files(aword_list, afilepaths, exact_match=False):
+def word_counting_in_files(
+    aword_list, afilepaths, exact_match=False, white_spaces=False
+):
     """
 
     Main code for counting words in files.
@@ -45,6 +47,12 @@ def word_counting_in_files(aword_list, afilepaths, exact_match=False):
                         sum(1 for _ in re.finditer(r"\b%s\b" % re.escape(word), text))
                         for word in aword_list
                     ]
+                elif white_spaces:
+                    counts = [
+                        len(re.compile(r"\s*".join(word), re.IGNORECASE).findall(text))
+                        for word in aword_list
+                    ]
+
                 else:
                     counts = [text.count(word) for word in aword_list]
 
@@ -56,7 +64,8 @@ def word_counting_in_files(aword_list, afilepaths, exact_match=False):
     # Convert the list to a pandas DataFrame
     df = pd.DataFrame(word_counts, columns=["Filepath"] + aword_list)
 
-    df["Filepath_extracted"] = df["Filepath"]
+    # TODO: the filepath to the extracted version might be interresting to keep.
+    # df["Filepath_extracted"] = df["Filepath"]
     df["Filepath"] = df["Filepath"].str.split("/").str[-1]
     df["Filepath"] = df["Filepath"].str.split(".txt").str[0]
     df["Filepath"] = df["Filepath"].apply(replace_underscore_with_period)
