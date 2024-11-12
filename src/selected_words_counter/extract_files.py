@@ -42,7 +42,10 @@ def process_and_save_file(
         print(afilepath)
     afilepath = afilepath.replace("\\", "/")
 
-    text_content = process_file(afilepath)
+    # remove linebreaks with "-"
+    text_content = re.sub(r"-\s*\n\s*", "", process_file(afilepath))
+    # Normalize a file by removing \b and whitespaces
+    text_content = re.sub(r"\s+", " ", text_content)
 
     try:
         # Generate a output name but if there are subdirectories in the directory put the subdirectories name in the filename.
@@ -207,7 +210,6 @@ def read_pdf(file_path):
 
             # Get the number of pages in the PDF
             num_pages = len(pdf_reader.pages)
-            print(f"Number of pages: {num_pages}")
 
             # Extract text from each page
             for page_num in range(num_pages):

@@ -18,5 +18,6 @@ def generate_dutch_text(prompt, max_length=200, temperature=0.7, top_k=50, top_p
         top_p=top_p,
         no_repeat_ngram_size=2,
         repetition_penalty=1.2,
+        do_sample=True,
     )
     return tokenizer.decode(outputs[0], skip_special_tokens=True)

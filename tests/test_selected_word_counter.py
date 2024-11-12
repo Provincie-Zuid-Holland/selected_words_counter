@@ -214,6 +214,9 @@ def test_count_files_nl():
             "verblijfkosten",
             "cruijff",
             "halsema",
+            "ministerie van justitie en veiligheid",
+            "ifzo",
+            "rvdk",
         ]
 
         result_output = SelectedWordCounter(
@@ -245,6 +248,14 @@ def test_count_files_nl():
                 "verblijfkosten": 6,
             },
             "gmb-2024-471945.pdf": {"cruijff": 6, "halsema": 1},
+            "blg-1159474.pdf": {
+                "ministerie van justitie en veiligheid": 18,
+                "ifzo": 449,
+            },
+            "blg-1161086.pdf": {
+                "ministerie van justitie en veiligheid": 12,
+                "rvdk": 13,
+            },
         }
 
         # Loop through each file format and check counts
