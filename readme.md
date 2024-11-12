@@ -17,7 +17,7 @@
 Clone this repository and install the dependencies:
 
 ```bash
-git clone https://github.com/your-username/selected-words-counter.git
+git clone https://github.com/Provincie-Zuid-Holland/selected_words_counter.git
 cd selected-words-counter
 pip install -r requirements.txt
 pip install -e .
