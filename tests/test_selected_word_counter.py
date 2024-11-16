@@ -74,7 +74,13 @@ def test_extract_files_run():
                             glob(
                                 test_dir_converted
                                 # Replace directory slashes with # to make one file name while still knowing the original directory
-                                + f"/{extract_files.replace_last_slash(afilepath, replacement="#").split("/")[-1].split(".")[0]}*.txt"
+                                + "/"
+                                + extract_files.replace_last_slash(
+                                    afilepath, replacement="#"
+                                )
+                                .split("/")[-1]
+                                .split(".")[0]
+                                + "*.txt"
                             )
                         )
                         >= 1
