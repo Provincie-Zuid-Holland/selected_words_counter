@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from glob import glob
 
+import chardet
 import extract_msg
 import pandas as pd
 import pptx
@@ -64,7 +65,7 @@ def process_and_save_file(
         with open(a_output_name, "w", encoding="utf-8") as file:
             file.write(str(text_content))
     except Exception as e:
-        print("Error with writing file: " + e)
+        print(f"Error with writing file {afilepath}: " + e)
 
 
 def make_dir_from_filename(afilepath):
@@ -81,7 +82,7 @@ def make_dir_from_filename(afilepath):
 def extract_msg_attachments(atarget_dir):
     """
 
-    Extract all .msg files in a directory.
+    Extract all .msg i.e. emails files in a directory.
 
     @param atarget_dir: directory where the .msg files are stored.
     """
@@ -97,13 +98,14 @@ def extract_msg_attachments(atarget_dir):
                 if len(msg.attachments) > 0:
                     a_output_directory = make_dir_from_filename(afilepath)
 
+                    # TODO: Check if encoding is also needed for the attachments.
                     for item in range(0, len(msg.attachments)):
                         att = msg.attachments[item]
                         msg.attachments[item].save(
                             customPath=a_output_directory,
                             customFilename=att.longFilename,
                         )
-                return 0
+                return True
             except Exception as e:
                 continue
         print(f"Failed to read {afilepath} with all tested encodings.")
@@ -203,7 +205,6 @@ def run(atarget_dir, atarget_dir_extracted, amulti_thread=False):
 def read_pdf(file_path):
     text = ""
     try:
-        # Open the PDF file
         with open(file_path, "rb") as file:
             # Create a PDF reader object
             pdf_reader = PdfReader(file)
@@ -214,11 +215,27 @@ def read_pdf(file_path):
             # Extract text from each page
             for page_num in range(num_pages):
                 page = pdf_reader.pages[page_num]
-                text += (
-                    page.extract_text()
-                    .encode("utf-8", errors="ignore")
-                    .decode("utf-8", errors="ignore")
+
+                # Raw text extraction
+                raw_text = page.extract_text()
+
+                # Analyze encoding
+                encoded_text = raw_text
+                detected_encoding = chardet.detect(encoded_text)  # Detect encoding
+
+                # Log detected encoding
+                print(
+                    f"Page {page_num + 1}: Detected encoding - {detected_encoding['encoding']}"
                 )
+
+                # Decode and add to full text if encoding is valid
+                try:
+                    decoded_text = encoded_text.decode(
+                        detected_encoding["encoding"], errors="ignore"
+                    )
+                    text += decoded_text
+                except Exception as e:
+                    print(f"Error decoding page {page_num + 1}: {e}")
 
     except Exception as e:
         print(f"Error processing {file_path}: {e}")

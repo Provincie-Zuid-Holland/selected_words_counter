@@ -20,7 +20,7 @@ def replace_underscore_with_period(ainput_string):
 
 
 def word_counting_in_files(
-    aword_list, afilepaths, exact_match=False, white_spaces=False
+    aword_list, afilepaths, exact_match=False, allow_spaces=False
 ):
     """
 
@@ -32,6 +32,7 @@ def word_counting_in_files(
     @oaram aword_list: Words to be searched and counted for.
     @param afilepaths: File paths of files.
     @param exact_match: Wether to do partial matching or exact matching.
+    @param allow_spaces: Allow spaces between letters of thw words, for example:  "ex ac t" would match "exact" now.
     """
     word_counts = []
 
@@ -47,7 +48,7 @@ def word_counting_in_files(
                         sum(1 for _ in re.finditer(r"\b%s\b" % re.escape(word), text))
                         for word in aword_list
                     ]
-                elif white_spaces:
+                elif allow_spaces:
                     counts = [
                         len(re.compile(r"\s*".join(word), re.IGNORECASE).findall(text))
                         for word in aword_list
