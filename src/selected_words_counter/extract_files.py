@@ -71,6 +71,7 @@ def process_and_save_file(
 
 def make_dir_from_filename(afilepath):
     """
+
     Make a directory based on the file name
 
     """
@@ -82,7 +83,6 @@ def make_dir_from_filename(afilepath):
 
 def extract_msg_attachments(atarget_dir):
     """
-
     Extract all .msg i.e. emails files in a directory.
 
     @param atarget_dir: directory where the .msg files are stored.
@@ -110,7 +110,7 @@ def extract_msg_attachments(atarget_dir):
             except Exception as e:
                 continue
         print(f"Failed to read {afilepath} with all tested encodings.")
-        return None
+        return False
 
 
 def extract_zip_attachments(atarget_dir):
