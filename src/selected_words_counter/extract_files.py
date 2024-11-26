@@ -1,6 +1,8 @@
 import os
+import platform
 import re
 import shutil
+import subprocess
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
@@ -10,7 +12,6 @@ import chardet
 import extract_msg
 import pandas as pd
 import pptx
-import textract
 from docx import Document
 from pypdf import PdfReader
 from tqdm import tqdm
@@ -202,7 +203,7 @@ def run(atarget_dir, atarget_dir_extracted, amulti_thread=False):
 
 
 # Different functions for opening files.
-def read_pdf(file_path):
+def read_pdf(file_path, detect_encoding=False):
     text = ""
     try:
         with open(file_path, "rb") as file:
@@ -221,21 +222,25 @@ def read_pdf(file_path):
 
                 # Analyze encoding
                 encoded_text = raw_text
-                detected_encoding = chardet.detect(encoded_text)  # Detect encoding
 
-                # Log detected encoding
-                print(
-                    f"Page {page_num + 1}: Detected encoding - {detected_encoding['encoding']}"
-                )
+                if detect_encoding == True:
+                    detected_encoding = chardet.detect(encoded_text)  # Detect encoding
 
-                # Decode and add to full text if encoding is valid
-                try:
-                    decoded_text = encoded_text.decode(
-                        detected_encoding["encoding"], errors="ignore"
+                    # Log detected encoding
+                    print(
+                        f"Page {page_num + 1}: Detected encoding - {detected_encoding['encoding']}"
                     )
-                    text += decoded_text
-                except Exception as e:
-                    print(f"Error decoding page {page_num + 1}: {e}")
+
+                    # Decode and add to full text if encoding is valid
+                    try:
+                        decoded_text = encoded_text.decode(
+                            detected_encoding["encoding"], errors="ignore"
+                        )
+                        text += decoded_text
+                    except Exception as e:
+                        print(f"Error decoding page {page_num + 1}: {e}")
+                else:
+                    text += encoded_text
 
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
@@ -277,9 +282,83 @@ def read_xls(file_path):
     return collapsed_text
 
 
+def detect_os():
+    """Detect the operating system."""
+    system = platform.system()
+    if system == "Windows":
+        return "Windows"
+    elif system == "Linux" or system == "Darwin":
+        return "Linux/Unix"
+    else:
+        raise OSError("Unsupported operating system")
+
+
+def process_doc_with_pywin32(file_path):
+    """Process .doc file using pywin32 on Windows."""
+    try:
+        # Import win32com only if on Windows
+        import win32com.client
+
+        # Initialize Word application
+        word = win32com.client.Dispatch("Word.Application")
+        word.Visible = False  # Prevent Word GUI
+
+        # Open the .doc file
+        doc = word.Documents.Open(os.path.abspath(file_path))
+
+        # Extract text
+        text = doc.Content.Text
+
+        # Close the document and Word application
+        doc.Close()
+        word.Quit()
+
+        return text
+
+    except Exception as e:
+        raise RuntimeError(f"Error processing .doc file with pywin32: {e}")
+
+
+def process_doc_with_antiword(file_path):
+    """
+    Extract text from a .doc file using Antiword.
+    :param file_path: Path to the .doc file.
+    :return: Extracted text.
+    """
+    try:
+        # Call Antiword to extract text
+        result = subprocess.run(
+            ["antiword", file_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+
+        # Check for errors
+        if result.returncode != 0:
+            raise RuntimeError(f"Antiword error: {result.stderr.strip()}")
+
+        # Return the extracted text
+        return result.stdout
+
+    except FileNotFoundError:
+        raise RuntimeError("Antiword is not installed. Please install it first.")
+    except Exception as e:
+        raise RuntimeError(f"An error occurred while processing the file: {e}")
+
+
 def read_doc(file_path):
-    text = textract.process(file_path)
-    return text
+    """Read .doc file based on the operating system."""
+    os_type = detect_os()
+
+    if os_type == "Windows":
+        print("Detected OS: Windows. Using pywin32 to process the .doc file.")
+        return process_doc_with_pywin32(file_path)
+    elif os_type == "Linux/Unix":
+        print("Detected OS: Linux/Unix. Using unoconv to process the .doc file.")
+        return process_doc_with_antiword(file_path)
+    else:
+        raise OSError("Unsupported operating system for .doc processing")
 
 
 def read_pptx(file_path):

@@ -48,19 +48,29 @@ def test_extract_files_run():
             len(found_file_paths) >= 10
         ), "Expected at least 10 files in test_dir_converted"
 
-        # Check pdf's have been converted.
-        assert len(open(glob(test_dir_converted + "/*_pdf.txt")[0], "r").read()) > 0
         # Check if pptx files have been converted.
-        assert len(open(glob(test_dir_converted + "/*_pptx.txt")[0], "r").read()) > 0
+        with open(glob(test_dir_converted + "/*_pptx.txt")[0], "r") as file:
+            assert len(file.read()) > 0
+
         # Check if docx files have been converted
-        assert len(open(glob(test_dir_converted + "/*_docx.txt")[0], "r").read()) > 0
-        # Check if doc files have been converted
-        # TODO: it's hard to generate .doc files in python because of deprecated libraries, more effort needs to done to also generate these files.
-        # assert len(open(glob(test_dir_converted + "/*_doc.text")[0], "r").read()) > 0
-        # TODO: it's hard to generate .xls files in python because of deprecated libraries, more effort needs to done to also generate these files.
-        # assert len(open(glob(test_dir_converted + "/*_xls.text")[0], "r").read()) > 0
+        with open(glob(test_dir_converted + "/*_docx.txt")[0], "r") as file:
+            assert len(file.read()) > 0
+
         # Check if xlsx files have been converted
-        assert len(open(glob(test_dir_converted + "/*_xlsx.txt")[0], "r").read()) > 0
+        with open(glob(test_dir_converted + "/*_xlsx.txt")[0], "r") as file:
+            assert len(file.read()) > 0
+
+        # Check pdf's have been converted.
+        with open(glob(test_dir_converted + "/*_pdf.txt")[0], "r") as file:
+            assert len(file.read()) > 0
+
+        # Check if doc files have been converted.
+        with open(glob(test_dir_converted + "/*_doc.txt")[0], "r") as file:
+            assert len(file.read()) > 0
+
+        # Check if .xls has been read.
+        with open(glob(test_dir_converted + "/*_xls.txt")[0], "r") as file:
+            assert len(file.read()) > 0
 
         # Assert if files from directories made it in the convert folder
         for item in os.listdir(test_dir):
@@ -86,12 +96,13 @@ def test_extract_files_run():
                         >= 1
                     ), "Expected a file in a directory to be found as with a # in it's name denoting the directory in the converted map"
     finally:
-        shutil.rmtree(test_dir_converted)
+        # shutil.rmtree(test_dir_converted)
 
-        for item in os.listdir(test_dir):
-            item_path = os.path.join(test_dir, item)
-            if os.path.isdir(item_path):
-                shutil.rmtree(item_path)
+        # for item in os.listdir(test_dir):
+        #    item_path = os.path.join(test_dir, item)
+        #    if os.path.isdir(item_path):
+        #        shutil.rmtree(item_path)
+        print(False)
 
 
 def test_count_files():
@@ -104,6 +115,8 @@ def test_count_files():
             "collapse",
             "netherlands",
             "fuji",
+            "testament",
+            "testing",
         ]
 
         result_output = SelectedWordCounter(
@@ -132,6 +145,7 @@ def test_count_files():
             },
             "alter strip lucy z cemetery kinds.pdf": {"collapse": 1, "netherlands": 1},
             "companies continuing politics tex parcel glass.msg": {"fuji": 1},
+            "this_is_a_testament_to_testing.doc": {"testament": 1, "testing": 1},
         }
 
         # Loop through each file format and check counts
