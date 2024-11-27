@@ -408,7 +408,7 @@ def process_file(a_file_path):
             elif "pptx" in file_type:
                 a_content = read_pptx(a_file_path)
         except Exception as e:
-            print("Errow with Reading " + a_file_path)
+            print("Error with Reading " + a_file_path)
             print(e)
 
     return a_content
