@@ -1,11 +1,28 @@
+<<<<<<< HEAD
 extract_msg
 openpyxl==3.1.5
+=======
+chardet==3.0.4
+extract_msg==0.28.7
+huggingface_hub==0.26.2
+openpyxl==3.1.2
+>>>>>>> b8d3ec39a8e13bb99e4e7cc2f96bfbba7648debc
 pandas==2.2.3
 pypdf==5.1.0
 python_docx==1.1.2
 python_pptx==0.6.23
+<<<<<<< HEAD
 pywin32==308; sys_platform == "win32"
 tqdm==4.66.1
 
 
+=======
+pywin32==305.1
+reportlab==4.2.5
+Requests==2.32.3
+setuptools==69.5.1
+textract==1.6.5
+tqdm==4.66.4
+pip==23.3.1
+>>>>>>> b8d3ec39a8e13bb99e4e7cc2f96bfbba7648debc
 

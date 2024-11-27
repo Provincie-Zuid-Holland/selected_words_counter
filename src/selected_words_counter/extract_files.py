@@ -65,6 +65,7 @@ def process_and_save_file(
             print(a_output_name)
         with open(a_output_name, "w", encoding="utf-8") as file:
             file.write(str(text_content))
+            file.close()
     except Exception as e:
         print(f"Error with writing file {afilepath}: " + e)
 
