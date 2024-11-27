@@ -1,6 +1,7 @@
 name: Run Pytest on PR
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main  # Adjust this to the branch you want to test against
