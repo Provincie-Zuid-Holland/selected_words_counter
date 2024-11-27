@@ -29,9 +29,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
-          pip install .     
+          pip install -e .    
 
       - name: Run Pytest
         run: |
           cd tests
-          pytest
+          python -m pytest
