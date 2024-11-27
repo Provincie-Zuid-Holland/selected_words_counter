@@ -1,17 +1,19 @@
 import os
+import platform
 import re
 import shutil
+import subprocess
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from glob import glob
 
+import chardet
 import extract_msg
 import pandas as pd
 import pptx
-import PyPDF2
-import textract
 from docx import Document
+from pypdf import PdfReader
 from tqdm import tqdm
 
 """
@@ -42,9 +44,12 @@ def process_and_save_file(
         print(afilepath)
     afilepath = afilepath.replace("\\", "/")
 
-    try:
-        text_content = process_file(afilepath)
+    # remove linebreaks with "-"
+    text_content = re.sub(r"-\s*\n\s*", "", process_file(afilepath))
+    # Normalize a file by removing \b and whitespaces
+    text_content = re.sub(r"\s+", " ", text_content)
 
+    try:
         # Generate a output name but if there are subdirectories in the directory put the subdirectories name in the filename.
         a_output_name = (
             atarget_dir_extracted
@@ -58,15 +63,16 @@ def process_and_save_file(
         )
         if verbose:
             print(a_output_name)
-        with open(a_output_name, "w") as file:
+        with open(a_output_name, "w", encoding="utf-8") as file:
             file.write(str(text_content))
-
+            file.close()
     except Exception as e:
-        print(f"Error processing {afilepath}: {e}")
+        print(f"Error with writing file {afilepath}: " + e)
 
 
 def make_dir_from_filename(afilepath):
     """
+
     Make a directory based on the file name
 
     """
@@ -78,27 +84,34 @@ def make_dir_from_filename(afilepath):
 
 def extract_msg_attachments(atarget_dir):
     """
-
-    Extract all .msg files in a directory.
+    Extract all .msg i.e. emails files in a directory.
 
     @param atarget_dir: directory where the .msg files are stored.
     """
     # Extract all .msg files into a directory
     for afilepath in glob(atarget_dir + "*.msg"):
         afilepath = afilepath.replace("\\", "/")
-        try:
-            msg = extract_msg.Message(afilepath)
 
-            if len(msg.attachments) > 0:
-                a_output_directory = make_dir_from_filename(afilepath)
+        encodings = ["utf-8", "ISO-8859-1", "windows-1252"]
+        for encoding in encodings:
+            try:
+                msg = extract_msg.Message(afilepath, overrideEncoding=encoding)
 
-                for item in range(0, len(msg.attachments)):
-                    att = msg.attachments[item]
-                    msg.attachments[item].save(
-                        customPath=a_output_directory, customFilename=att.longFilename
-                    )
-        except Exception as e:
-            print(e)
+                if len(msg.attachments) > 0:
+                    a_output_directory = make_dir_from_filename(afilepath)
+
+                    # TODO: Check if encoding is also needed for the attachments.
+                    for item in range(0, len(msg.attachments)):
+                        att = msg.attachments[item]
+                        msg.attachments[item].save(
+                            customPath=a_output_directory,
+                            customFilename=att.longFilename,
+                        )
+                return True
+            except Exception as e:
+                continue
+        print(f"Failed to read {afilepath} with all tested encodings.")
+        return False
 
 
 def extract_zip_attachments(atarget_dir):
@@ -154,12 +167,10 @@ def extracted_files_from_list_filepaths(
                 except Exception as e:
                     print(f"Exception occurred: {e}")
     else:
-        [
+        for afilepath in tqdm(afilepaths):
             process_and_save_file(
                 afilepath, atarget_dir, atarget_dir_extracted, verbose
             )
-            for afilepath in afilepaths
-        ]
 
 
 def run(atarget_dir, atarget_dir_extracted, amulti_thread=False):
@@ -193,21 +204,44 @@ def run(atarget_dir, atarget_dir_extracted, amulti_thread=False):
 
 
 # Different functions for opening files.
-def read_pdf(file_path):
+def read_pdf(file_path, detect_encoding=False):
     text = ""
     try:
         with open(file_path, "rb") as file:
-            pdf_reader = PyPDF2.PdfReader(file)
+            # Create a PDF reader object
+            pdf_reader = PdfReader(file)
+
+            # Get the number of pages in the PDF
             num_pages = len(pdf_reader.pages)
+
+            # Extract text from each page
             for page_num in range(num_pages):
                 page = pdf_reader.pages[page_num]
-                page_text = page.extract_text()
 
-                # Handle encoding issues with utf-8-sig and replace errors
-                if page_text:
-                    text += page_text.encode("utf-8-sig", errors="replace").decode(
-                        "utf-8-sig", errors="replace"
+                # Raw text extraction
+                raw_text = page.extract_text()
+
+                # Analyze encoding
+                encoded_text = raw_text
+
+                if detect_encoding == True:
+                    detected_encoding = chardet.detect(encoded_text)  # Detect encoding
+
+                    # Log detected encoding
+                    print(
+                        f"Page {page_num + 1}: Detected encoding - {detected_encoding['encoding']}"
                     )
+
+                    # Decode and add to full text if encoding is valid
+                    try:
+                        decoded_text = encoded_text.decode(
+                            detected_encoding["encoding"], errors="ignore"
+                        )
+                        text += decoded_text
+                    except Exception as e:
+                        print(f"Error decoding page {page_num + 1}: {e}")
+                else:
+                    text += encoded_text
 
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
@@ -224,14 +258,22 @@ def read_docx(file_path):
 
 
 def read_msg(file_path):
-    msg = extract_msg.Message(file_path)
-    msg_text = "Sender: " + str(msg.sender) + " | \n "
-    msg_text = msg_text + "To: " + str(msg.to) + " | \n "
-    msg_text = msg_text + "CC: " + str(msg.cc) + " | \n "
-    msg_text = msg_text + "BCC: " + str(msg.bcc) + " | \n "
-    msg_text = msg_text + "Subject: " + str(msg.subject) + " | \n "
-    msg_text = msg_text + "Body: " + str(msg.body)
-    return msg_text
+    encodings = ["utf-8", "ISO-8859-1", "windows-1252"]
+    for encoding in encodings:
+        try:
+            msg = extract_msg.Message(file_path, overrideEncoding=encoding)
+            msg_text = "Sender: " + str(msg.sender) + " | \n "
+            msg_text += "To: " + str(msg.to) + " | \n "
+            msg_text += "CC: " + str(msg.cc) + " | \n "
+            msg_text += "BCC: " + str(msg.bcc) + " | \n "
+            msg_text += "Subject: " + str(msg.subject) + " | \n "
+            msg_text += "Body: " + str(msg.body)
+            return msg_text  # Return if successful
+        except Exception as e:
+            continue  # Try the next encoding if an error occurs
+
+    print(f"Failed to read {file_path} with all tested encodings.")
+    return None  # Return None if all encoding attempts fail
 
 
 def read_xls(file_path):
@@ -241,9 +283,83 @@ def read_xls(file_path):
     return collapsed_text
 
 
+def detect_os():
+    """Detect the operating system."""
+    system = platform.system()
+    if system == "Windows":
+        return "Windows"
+    elif system == "Linux" or system == "Darwin":
+        return "Linux/Unix"
+    else:
+        raise OSError("Unsupported operating system")
+
+
+def process_doc_with_pywin32(file_path):
+    """Process .doc file using pywin32 on Windows."""
+    try:
+        # Import win32com only if on Windows
+        import win32com.client
+
+        # Initialize Word application
+        word = win32com.client.Dispatch("Word.Application")
+        word.Visible = False  # Prevent Word GUI
+
+        # Open the .doc file
+        doc = word.Documents.Open(os.path.abspath(file_path))
+
+        # Extract text
+        text = doc.Content.Text
+
+        # Close the document and Word application
+        doc.Close()
+        word.Quit()
+
+        return text
+
+    except Exception as e:
+        raise RuntimeError(f"Error processing .doc file with pywin32: {e}")
+
+
+def process_doc_with_antiword(file_path):
+    """
+    Extract text from a .doc file using Antiword.
+    :param file_path: Path to the .doc file.
+    :return: Extracted text.
+    """
+    try:
+        # Call Antiword to extract text
+        result = subprocess.run(
+            ["antiword", file_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+
+        # Check for errors
+        if result.returncode != 0:
+            raise RuntimeError(f"Antiword error: {result.stderr.strip()}")
+
+        # Return the extracted text
+        return result.stdout
+
+    except FileNotFoundError:
+        raise RuntimeError("Antiword is not installed. Please install it first.")
+    except Exception as e:
+        raise RuntimeError(f"An error occurred while processing the file: {e}")
+
+
 def read_doc(file_path):
-    text = textract.process(file_path)
-    return text
+    """Read .doc file based on the operating system."""
+    os_type = detect_os()
+
+    if os_type == "Windows":
+        print("Detected OS: Windows. Using pywin32 to process the .doc file.")
+        return process_doc_with_pywin32(file_path)
+    elif os_type == "Linux/Unix":
+        print("Detected OS: Linux/Unix. Using unoconv to process the .doc file.")
+        return process_doc_with_antiword(file_path)
+    else:
+        raise OSError("Unsupported operating system for .doc processing")
 
 
 def read_pptx(file_path):
@@ -293,7 +409,7 @@ def process_file(a_file_path):
             elif "pptx" in file_type:
                 a_content = read_pptx(a_file_path)
         except Exception as e:
-            print("Errow with " + a_file_path)
+            print("Error with Reading " + a_file_path)
             print(e)
 
     return a_content
