@@ -8,7 +8,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from glob import glob
 
-import chardet
 import extract_msg
 import pandas as pd
 import pptx
@@ -225,21 +224,23 @@ def read_pdf(file_path, detect_encoding=False):
                 encoded_text = raw_text
 
                 if detect_encoding == True:
-                    detected_encoding = chardet.detect(encoded_text)  # Detect encoding
+                    # TODO: Make this run with chardet.
+                    # detected_encoding = chardet.detect(encoded_text)  # Detect encoding
 
                     # Log detected encoding
-                    print(
-                        f"Page {page_num + 1}: Detected encoding - {detected_encoding['encoding']}"
-                    )
+                    # print(
+                    #    f"Page {page_num + 1}: Detected encoding - {detected_encoding['encoding']}"
+                    # )
 
                     # Decode and add to full text if encoding is valid
-                    try:
-                        decoded_text = encoded_text.decode(
-                            detected_encoding["encoding"], errors="ignore"
-                        )
-                        text += decoded_text
-                    except Exception as e:
-                        print(f"Error decoding page {page_num + 1}: {e}")
+                    # try:
+                    #    decoded_text = encoded_text.decode(
+                    #        detected_encoding["encoding"], errors="ignore"
+                    #    )
+                    #    text += decoded_text
+                    # except Exception as e:
+                    #    print(f"Error decoding page {page_num + 1}: {e}")
+                    print("Error not yet implementated")
                 else:
                     text += encoded_text
 
