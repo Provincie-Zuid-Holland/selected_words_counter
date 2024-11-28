@@ -23,6 +23,8 @@ pip install -r requirements.txt
 pip install -e .
  ```
 
+If you are on Windows ensure that you have either MS-Office or LibreOffice installed in the default locations for now.
+
 ### Configuration
 Customize the `config.py` file to specify:
 - Your target directory
