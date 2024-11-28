@@ -23,6 +23,35 @@ This file is used to store code for extracting text from different file formats.
 """
 
 
+def is_office_installed():
+    """
+    Check if there is a office installation.
+    """
+    # Common installation directories for Microsoft Office
+    common_paths = [
+        r"C:\Program Files\Microsoft Office",
+        r"C:\Program Files (x86)\Microsoft Office",
+        r"C:\Program Files\Microsoft Office\root\Office16",  # Office 2016/365
+        r"C:\Program Files (x86)\Microsoft Office\root\Office16",
+    ]
+
+    for path in common_paths:
+        if os.path.exists(path):
+            print(f"Microsoft Office is installed at {path}.")
+            return True
+
+    print("Microsoft Office is not installed.")
+    return False
+
+
+def is_libre_office_installed():
+    """
+    Check if there is LibreOffice installation.
+
+    """
+    return os.path.isfile("C:/Program Files/LibreOffice/program/soffice.exe")
+
+
 def process_and_save_file(
     afilepath,
     atarget_dir,
@@ -295,6 +324,59 @@ def detect_os():
         raise OSError("Unsupported operating system")
 
 
+def process_doc_with_libreoffice(file_path):
+    """
+    Extract text from a .doc file using LibreOffice and remove the generated .txt file.
+    ENSURE THAT LibreOffice is installed.
+
+    @param file_path (str): Path to the .doc file.
+
+    Returns:
+        str: Extracted text from the .doc file.
+    """
+    try:
+        # Define output directory and file name
+
+        output_file = file_path.replace(".doc", "")
+
+        # Set path to libre office.
+        subprocess.run(
+            "set PATH=%PATH%;C:/Program Files/LibreOffice/program", shell=True
+        )
+
+        # Convert .doc to .txt using LibreOffice
+        subprocess.run(
+            [
+                "soffice",
+                "--headless",
+                "--convert-to",
+                "txt",
+                "--outdir",
+                output_file,
+                file_path,
+            ],
+            check=True,
+        )
+
+        # Read and store the content of the generated .txt file
+        with open(glob(output_file + "/*")[0], "r", encoding="utf-8") as txt_file:
+            content = txt_file.read()
+
+        # Remove the generated .txt file
+        shutil.rmtree(output_file)
+
+        return content
+    except subprocess.CalledProcessError as e:
+        print(f"LibreOffice conversion error: {e}")
+        return None
+    except FileNotFoundError:
+        print("LibreOffice is not installed or not in PATH.")
+        return None
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
+
 def process_doc_with_pywin32(file_path):
     """Process .doc file using pywin32 on Windows."""
     try:
@@ -355,7 +437,15 @@ def read_doc(file_path):
 
     if os_type == "Windows":
         print("Detected OS: Windows. Using pywin32 to process the .doc file.")
-        return process_doc_with_pywin32(file_path)
+
+        # TODO:Might optimize performance here a bit with not constantly checking install locations.
+        # Detect if libreOffice is installed at the default location.
+        if is_libre_office_installed:
+            return process_doc_with_libreoffice(file_path)
+        elif is_office_installed:
+            return process_doc_with_pywin32(file_path)
+        else:
+            raise "Windows Office or LibreOffice not found on the default locations to process .doc"
     elif os_type == "Linux/Unix":
         print("Detected OS: Linux/Unix. Using unoconv to process the .doc file.")
         return process_doc_with_antiword(file_path)
