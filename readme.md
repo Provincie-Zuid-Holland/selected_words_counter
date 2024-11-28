@@ -24,6 +24,7 @@ pip install -e .
  ```
 
 If you are on Windows ensure that you have either MS-Office or LibreOffice installed in the default locations for now.
+So "C:\Program Files\Microsoft Office" or "C:/Program Files/LibreOffice/"
 
 ### Configuration
 Customize the `config.py` file to specify:

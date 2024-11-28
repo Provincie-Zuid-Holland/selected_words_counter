@@ -445,9 +445,7 @@ def read_doc(file_path):
         elif is_office_installed:
             return process_doc_with_pywin32(file_path)
         else:
-            print(
-                "Windows Office or LibreOffice not found on the default locations to process .doc"
-            )
+            raise "Windows Office or LibreOffice not found on the default locations to process .doc"
     elif os_type == "Linux/Unix":
         print("Detected OS: Linux/Unix. Using unoconv to process the .doc file.")
         return process_doc_with_antiword(file_path)
