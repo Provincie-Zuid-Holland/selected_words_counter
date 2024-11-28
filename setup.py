@@ -6,7 +6,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="selected_words_counter",
-    version="0.6",
+    version="0.7",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=required,
