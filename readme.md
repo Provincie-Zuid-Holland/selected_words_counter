@@ -14,7 +14,7 @@
 - Necessary packages (see `requirements.txt`)
 
 ### Installation
-Clone this repository and install the dependencies:
+Clone this repository and install the dependencies for the latest version:
 
 ```bash
 git clone https://github.com/Provincie-Zuid-Holland/selected_words_counter.git
@@ -22,6 +22,12 @@ cd selected-words-counter
 pip install -r requirements.txt
 pip install -e .
  ```
+Or install with pip:
+```bash
+
+pip install selected-words-counter
+
+```
 
 If you are on Windows ensure that you have either MS-Office or LibreOffice installed in the default locations for now.
 So "C:\Program Files\Microsoft Office" or "C:/Program Files/LibreOffice/"
